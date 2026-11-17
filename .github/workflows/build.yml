@@ -1,0 +1,18 @@
+name: Compilación
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet restore RetailPOS.slnx
+      - run: dotnet build RetailPOS.slnx --configuration Release --no-restore
