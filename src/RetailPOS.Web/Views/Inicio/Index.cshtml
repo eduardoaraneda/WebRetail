@@ -1,0 +1,28 @@
+@{ ViewData["Title"] = "Resumen"; }
+<div class="eyebrow">OPERACIÓN DE LA TIENDA</div>
+<h1>Todo listo para el siguiente paso.</h1>
+<p class="muted">Revisa el catálogo, ingresa existencias y abre una caja para comenzar a vender.</p>
+<div class="grid">
+<article class="card">Modelos<strong class="metric">
+@ViewBag.Productos</strong>
+</article>
+<article class="card">Variantes<strong class="metric">
+@ViewBag.Variantes</strong>
+</article>
+<article class="card">Unidades disponibles<strong class="metric">
+@ViewBag.Unidades</strong>
+</article>
+<article class="card">Ventas registradas<strong class="metric">
+@ViewBag.Ventas</strong>
+</article>
+</div>
+<div class="notice">Emisión tributaria en modo de demostración. Los comprobantes no se envían al SII y no tienen validez tributaria.</div>
+@if(User.IsInRole("Administrador")||User.IsInRole("Bodega")){
+<div class="notice">Alertas de reposición: @ViewBag.Alertas · Lotes en revisión: @ViewBag.Revisiones. <a asp-controller="InventarioControl" asp-action="Index">Revisar inventario</a></div>
+}
+@if (User.IsInRole("Administrador") || User.IsInRole("Vendedor"))
+{
+<a class="button" asp-controller="Ventas" asp-action="Nueva">Ir al punto de venta</a>
+}
+
+

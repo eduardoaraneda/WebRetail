@@ -1,0 +1,50 @@
+@{var sesion=User.Identity?.IsAuthenticated==true;var perfil=User.IsInRole("Administrador")?"Administrador":User.IsInRole("Bodega")?"Bodega":"Vendedor";}
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>@ViewData["Title"] · Punto de Venta Retail</title><link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/><link rel="stylesheet" href="~/css/shell.css" asp-append-version="true"/><script src="~/js/interfaz.js" asp-append-version="true" defer></script></head>
+<body class="@(sesion?"app-body":"public-body")"><a class="skip-link" href="#contenido">Saltar al contenido</a>
+@if(sesion){
+<aside id="sidebar" class="sidebar" aria-label="Menú principal">
+<a asp-controller="Inicio" asp-action="Index" class="sidebar-brand"><span class="brand-mark">R.</span><span>Retail<span class="brand-sub">PUNTO DE VENTA</span></span></a>
+<nav class="sidebar-nav" aria-label="Navegación principal"><span class="nav-group">GENERAL</span>
+@await Html.PartialAsync("_MenuEnlace",("Inicio","Resumen","◈"))
+@if(User.IsInRole("Administrador")||User.IsInRole("Vendedor")){
+<span class="nav-group">VENTAS Y CLIENTES</span>
+@await Html.PartialAsync("_MenuEnlace",("Ventas","Ventas y punto de venta","↗"))
+@await Html.PartialAsync("_MenuEnlace",("Caja","Caja y cuadraturas","▣"))
+@await Html.PartialAsync("_MenuEnlace",("Clientes","Clientes","◎"))
+@await Html.PartialAsync("_MenuEnlace",("Documentos","Documentos","▤"))
+@await Html.PartialAsync("_MenuEnlace",("Pagos","Cobros pendientes","≋"))
+}
+@if(User.IsInRole("Administrador")||User.IsInRole("Bodega")){
+<span class="nav-group">PRODUCTOS E INVENTARIO</span>
+@await Html.PartialAsync("_MenuEnlace",("Catalogo","Catálogo","◫"))
+@await Html.PartialAsync("_MenuEnlace",("Inventario","Inventario","□"))
+@await Html.PartialAsync("_MenuEnlace",("InventarioControl","Traspasos y revisión","⇄"))
+}
+@if(User.IsInRole("Administrador")){
+@await Html.PartialAsync("_MenuEnlace",("Parametros","Marcas y tallas","⌘"))
+@await Html.PartialAsync("_MenuEnlace",("Ofertas","Ofertas","%"))
+<span class="nav-group">ABASTECIMIENTO</span>
+@await Html.PartialAsync("_MenuEnlace",("Proveedores","Proveedores","◇"))
+@await Html.PartialAsync("_MenuEnlace",("Compras","Compras","⊕"))
+<span class="nav-group">ADMINISTRACIÓN</span>
+@await Html.PartialAsync("_MenuEnlace",("Reportes","Reportes","▥"))
+@await Html.PartialAsync("_MenuEnlace",("Usuarios","Usuarios y permisos","♧"))
+@await Html.PartialAsync("_MenuEnlace",("Administracion","Respaldos y auditoría","⚙"))
+}
+</nav>
+<div class="sidebar-account"><div class="account-avatar">@perfil[..1]</div><div class="account-meta"><strong>@perfil</strong><span title="@User.Identity?.Name">@User.Identity?.Name</span></div><form asp-controller="Acceso" asp-action="Salir" method="post"><button type="submit" class="logout-button" aria-label="Cerrar sesión" title="Cerrar sesión">↪</button></form></div>
+</aside><button id="sidebar-overlay" class="sidebar-overlay" aria-label="Cerrar menú" tabindex="-1"></button>
+}
+<div class="workspace">
+<header class="workspace-header">
+@if(sesion){<div class="workspace-heading"><button type="button" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú principal" aria-controls="sidebar" aria-expanded="false">☰</button><div><span class="workspace-label">ESPACIO DE TRABAJO</span><strong>@(ViewData["Title"]??"Panel principal")</strong></div></div>}
+else{<a class="access-brand" asp-controller="Acceso" asp-action="Login"><span class="brand-mark">R.</span><strong>Punto de Venta Retail</strong></a>}
+<span class="demo-pill"><span></span>Documentos simulados</span></header>
+<main id="contenido" tabindex="-1" class="workspace-content">
+@if(TempData["Ok"] is string ok){<div class="notice success" role="status">@ok</div>}
+@if(TempData["Error"] is string error){<div class="notice" role="alert">@error</div>}
+@RenderBody()
+</main><footer class="workspace-footer">Punto de Venta Retail · Gestión de tu tienda <span>Los documentos simulados no tienen validez tributaria.</span></footer>
+</div>@await RenderSectionAsync("Scripts",required:false)</body></html>
+
+

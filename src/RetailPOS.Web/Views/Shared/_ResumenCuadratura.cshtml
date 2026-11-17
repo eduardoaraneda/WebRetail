@@ -1,0 +1,25 @@
+@model ResumenCuadratura
+<section class="card resumen-cuadratura">
+    <div class="toolbar"><div><div class="eyebrow">@Model.Alcance</div><h2>Ventas del @Model.Fecha.ToString("dd/MM/yyyy") · Chile</h2></div><span class="badge">@Model.Estado</span></div>
+    <div class="table-wrap"><table><thead><tr><th>Tipo de documento de venta</th><th>Cantidad</th><th>Total vendido CLP</th></tr></thead><tbody>
+    @foreach(var d in Model.Documentos)
+    {
+        <tr><td>@d.Nombre <small>(simuladas)</small></td><td>@d.Cantidad</td><td>$@d.Total.ToString("N0")</td></tr>
+    }
+    </tbody><tfoot><tr><th>Total boletas y facturas</th><th>@Model.Documentos.Sum(x=>x.Cantidad)</th><th>$@Model.VentasBrutas.ToString("N0")</th></tr></tfoot></table></div>
+    <p class="muted">@Model.VentasCantidad ventas registradas. Los pagos combinados no duplican la cantidad de documentos. Las guías de despacho tampoco se suman como una nueva venta.</p>
+    <h2>Ingresos por medio de pago</h2>
+    <div class="table-wrap"><table><thead><tr><th>Medio de pago</th><th>Operaciones de pago</th><th>Ingreso por ventas</th><th>Cobros de notas de débito</th><th>Reembolsos</th><th>Total neto CLP</th></tr></thead><tbody>
+    @foreach(var ingreso in Model.Ingresos)
+    {
+        <tr><td>@(ingreso.Medio=="Tarjeta"?"Tarjetas":ingreso.Medio=="Otros"?"Otros medios":ingreso.Medio=="Transferencia"?"Transferencias":"Efectivo")</td><td>@ingreso.Operaciones</td><td>$@ingreso.Ventas.ToString("N0")</td><td>$@ingreso.CobrosDebito.ToString("N0")</td><td>$@ingreso.Reembolsos.ToString("N0")</td><td><strong>$@ingreso.Neto.ToString("N0")</strong></td></tr>
+    }
+    </tbody><tfoot><tr><th>Total</th><th>@Model.Ingresos.Sum(x=>x.Operaciones)</th><th>$@Model.Ingresos.Sum(x=>x.Ventas).ToString("N0")</th><th>$@Model.CobrosDebito.ToString("N0")</th><th>$@Model.Ingresos.Sum(x=>x.Reembolsos).ToString("N0")</th><th>$@Model.TotalPagos.ToString("N0")</th></tr></tfoot></table></div>
+    <div class="cuadratura-totales">
+        <dl><div><dt>Boletas + facturas</dt><dd>$@Model.VentasBrutas.ToString("N0")</dd></div><div><dt>Notas de crédito / devoluciones (@Model.NotasCreditoCantidad)</dt><dd>− $@Model.NotasCredito.ToString("N0")</dd></div><div class="destacado"><dt>Total de venta neta</dt><dd>$@Model.TotalVentasNeto.ToString("N0")</dd></div><div><dt>Cobros de notas de débito</dt><dd>+ $@Model.CobrosDebito.ToString("N0")</dd></div><div class="destacado"><dt>Total neto esperado del sistema</dt><dd>$@Model.TotalSistema.ToString("N0")</dd></div></dl>
+        <dl><div><dt>Total declarado por el cajero (todos los medios)</dt><dd>@(Model.DeclaradoBruto.HasValue?"$"+Model.DeclaradoBruto.Value.ToString("N0"):"Pendiente")</dd></div><div><dt>Fondo inicial / ingresos adicionales / retiros</dt><dd>$@Model.Fondo.ToString("N0") / $@Model.IngresosAdicionales.ToString("N0") / $@Model.Retiros.ToString("N0")</dd></div><div class="destacado"><dt>Total neto ingresado por el cajero</dt><dd>@(Model.DeclaradoNeto.HasValue?"$"+Model.DeclaradoNeto.Value.ToString("N0"):"Pendiente")</dd></div><div class="destacado"><dt>Diferencia total (ingresado − sistema)</dt><dd>@(Model.Diferencia.HasValue?"$"+Model.Diferencia.Value.ToString("N0"):"Pendiente")</dd></div><div><dt>Resultado</dt><dd>@Model.Estado</dd></div></dl>
+    </div>
+    <p class="muted">Para comparar ventas y recaudación se resta del conteo el fondo inicial y los ingresos que no son ventas, y se suman los retiros. Los cobros de débito se identifican por separado. Los cambios de talla se compensan con su nota de crédito; el saldo de cambio no es un nuevo ingreso de dinero.</p>
+    @if(Model.CajasAbiertas>0){<div class="notice">Hay @Model.CajasAbiertas caja(s) abierta(s). El total ingresado por el cajero quedará confirmado al guardar sus cierres.</div>}
+    @if(Model.DiferenciaRegistro!=0){<div class="notice" role="alert">Los documentos y los pagos tienen una diferencia de $@Model.DiferenciaRegistro.ToString("N0"). Revisa las operaciones antes de cerrar.</div>}
+</section>

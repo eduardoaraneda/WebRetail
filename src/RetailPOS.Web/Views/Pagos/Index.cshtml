@@ -1,0 +1,10 @@
+@model List<Documento>
+@{ ViewData["Title"]="Cobros pendientes"; var pagados=(Dictionary<int,decimal>)ViewBag.Pagados; }
+<h1>Cobro de notas de débito internas</h1><p class="muted">Se permiten cobros parciales hasta completar el saldo. Cada cobro ingresa a la cuadratura del vendedor. Los documentos siguen siendo simulados.</p>
+<div class="table-wrap"><table><thead><tr><th>Nota / venta</th><th>Total</th><th>Cobrado</th><th>Saldo</th><th>Cobrar</th></tr></thead><tbody>
+@foreach(var d in Model){var saldo=d.Total-pagados.GetValueOrDefault(d.Id);
+<tr><td>#@d.Id · Venta #@d.VentaId</td><td>$@d.Total.ToString("N0")</td><td>$@pagados.GetValueOrDefault(d.Id).ToString("N0")</td><td>$@saldo.ToString("N0")</td><td>@if(saldo>0){
+<form asp-action="Cobrar" method="post"><input name="solicitudId" type="hidden" value="@Guid.NewGuid()"/><input name="documentoId" type="hidden" value="@d.Id"/><select name="medio"><option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option><option>Otros</option></select><input aria-label="Importe a cobrar" name="importe" type="number" min="1" max="@saldo" required/><button>Registrar cobro</button></form>
+}</td></tr>}
+</tbody></table></div>
+

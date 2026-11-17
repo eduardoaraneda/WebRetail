@@ -1,0 +1,43 @@
+@model SesionCaja
+@{ ViewData["Title"] = "Cuadratura " + Model.Id; var filas = (List<CuadraturaMedio>)ViewBag.Filas; }
+<div class="eyebrow">CUADRATURA DE CAJA</div>
+<h1>Caja #@Model.Id</h1>
+<p>Día operativo: @Model.FechaOperativa.ToString("dd/MM/yyyy") · hora de Chile</p>
+@await Html.PartialAsync("_ResumenCuadratura",(ResumenCuadratura)ViewBag.Resumen)
+<p>@ViewBag.Vendedor · Apertura @Model.Apertura.ToString("dd/MM/yyyy HH:mm") UTC · @(Model.Cierre is null ? "Abierta" : "Cerrada " + Model.Cierre.Value.ToString("dd/MM/yyyy HH:mm") + " UTC")</p>
+@if (Model.Cierre is null)
+{
+    <div class="notice">Vista en curso. Los importes esperados pueden cambiar hasta confirmar el cierre.</div>
+}
+else if (filas.Count == 0)
+{
+    <div class="notice">Este cierre se registró antes del módulo de cuadratura por medios. Efectivo esperado: @Model.EfectivoEsperado?.ToString("N0"), contado: @Model.EfectivoContado?.ToString("N0"). No se inventaron conteos de tarjeta ni transferencia.</div>
+}
+<div class="table-wrap"><table><thead><tr><th>Medio</th><th>Fondo</th><th>Ventas</th><th>Reembolsos</th><th>Ingresos</th><th>Retiros</th><th>Esperado</th><th>Declarado</th><th>Diferencia CLP</th></tr></thead><tbody>
+@foreach (var f in filas)
+{
+    <tr><td>@f.Medio</td><td>@f.Fondo.ToString("N0")</td><td>@f.Ventas.ToString("N0")</td><td>@f.Reembolsos.ToString("N0")</td><td>@f.Ingresos.ToString("N0")</td><td>@f.Retiros.ToString("N0")</td><td>$@f.Esperado.ToString("N0")</td><td>@(Model.Cierre is null ? "—" : "$" + f.Contado.ToString("N0"))</td><td>@(Model.Cierre is null ? "—" : (f.Contado - f.Esperado).ToString("N0"))</td></tr>
+}
+</tbody></table></div>
+@if(filas.Count>0){<p class="total">Total esperado al cierre: $@filas.Sum(x=>x.Esperado).ToString("N0") · Total ingresado por cajero: @(Model.Cierre is null?"Pendiente":"$"+filas.Sum(x=>x.Contado).ToString("N0")) · Diferencia total: @(Model.Cierre is null?"Pendiente":"$"+filas.Sum(x=>x.Contado-x.Esperado).ToString("N0"))</p>}
+<p class="muted">Diferencia = declarado − esperado. Una cifra negativa indica faltante y una positiva, sobrante. Los saldos de tarjeta y transferencia son verificaciones manuales netas; no hay conciliación bancaria automática.</p>
+@if (Model.Cierre is not null)
+{
+    <section class="card"><h2>Observación del cierre</h2><p>@(Model.ObservacionCierre ?? "Sin observación")</p><p>Revisión: @(Model.Revision is null ? "Pendiente" : ViewBag.Revisor + " · " + Model.Revision.Value.ToString("dd/MM/yyyy HH:mm") + " UTC")</p></section>
+    @if (User.IsInRole("Administrador") && Model.Revision is null)
+    {
+        <form class="no-print" asp-action="Revisar" method="post"><input type="hidden" name="id" value="@Model.Id" /><button>Marcar cuadratura como revisada</button></form>
+    }
+}
+<h2>Movimientos adicionales de efectivo</h2>
+<div class="table-wrap"><table><thead><tr><th>Fecha UTC</th><th>Tipo</th><th>Importe CLP</th><th>Motivo</th></tr></thead><tbody>
+@foreach (var m in (List<MovimientoCaja>)ViewBag.Movimientos)
+{
+    <tr><td>@m.Fecha.ToString("dd/MM/yyyy HH:mm")</td><td>@m.Tipo</td><td>$@m.Importe.ToString("N0")</td><td>@m.Motivo</td></tr>
+}
+</tbody></table></div>
+<button type="button" class="secondary no-print" id="imprimir">Imprimir cuadratura</button>
+@section Scripts
+{
+    <script>document.getElementById('imprimir').addEventListener('click', () => window.print());</script>
+}

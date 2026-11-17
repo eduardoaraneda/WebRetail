@@ -1,0 +1,16 @@
+@model List<RetailPOS.Web.Controllers.FilaReporte>
+@{ ViewData["Title"]="Reportes"; var filtro=(RetailPOS.Web.Controllers.FiltroReporte)ViewBag.Filtro; var usuarios=(Dictionary<string,string>)ViewBag.Usuarios; }
+<h1>Ventas y utilidad estimada</h1>
+<form asp-action="Index" method="get" class="card"><div class="fields">
+<label>Desde (Chile)<input name="Desde" type="date" value="@filtro.Desde.ToString("yyyy-MM-dd")" required/></label><label>Hasta (Chile)<input name="Hasta" type="date" value="@filtro.Hasta.ToString("yyyy-MM-dd")" required/></label>
+<label>Vendedor<select name="Vendedor"><option value="">Todos</option>@foreach(var u in usuarios){<option selected="@(filtro.Vendedor==u.Key)" value="@u.Key">@u.Value</option>}</select></label>
+<label>Marca<select name="Marca"><option value="">Todas</option>@foreach(var m in (List<string>)ViewBag.Marcas){<option selected="@(filtro.Marca==m)" value="@m">@m</option>}</select></label>
+<label>Tienda<select name="Tienda"><option value="">Todas</option>@foreach(var t in (List<string>)ViewBag.Tiendas){<option selected="@(filtro.Tienda==t)" value="@t">@t</option>}</select></label></div><button>Filtrar</button> <button asp-action="Excel" class="secondary">Exportar Excel</button></form>
+<div class="grid"><section class="card">Ingreso de mercadería neto de devoluciones<strong class="metric">$@(((decimal)ViewBag.Ingresos).ToString("N0"))</strong></section><section class="card">Utilidad bruta estimada con costo conocido<strong class="metric">$@(((decimal)ViewBag.Utilidad).ToString("N0"))</strong></section><section class="card">Líneas sin costo<strong class="metric">@ViewBag.SinCosto</strong></section></div>
+<div class="notice">La utilidad usa el costo histórico de las unidades netas vendidas. Excluye impuestos, gastos generales, pérdidas por merma y notas de débito. Las devoluciones se atribuyen a la venta original; no representa un flujo de caja por fecha de reembolso. No se inventa utilidad para líneas sin costo.</div>
+<div class="table-wrap"><table><thead><tr><th>Venta / fecha UTC</th><th>Vendedor / tienda</th><th>SKU / marca</th><th>Unidades netas</th><th>Ingreso neto</th><th>Costo unitario</th><th>Utilidad estimada</th></tr></thead><tbody>
+@foreach(var f in Model){<tr><td>#@f.VentaId · @f.Fecha.ToString("dd/MM/yyyy HH:mm")</td><td>@usuarios.GetValueOrDefault(f.Vendedor,f.Vendedor) · @f.Tienda</td><td>@f.Sku · @f.Marca</td><td>@(f.Cantidad-f.Devueltas)</td><td>$@f.Neto.ToString("N0")</td><td>@(f.Costo?.ToString("N2")??"Desconocido")</td><td>@(f.Utilidad?.ToString("N2")??"No calculable")</td></tr>}
+</tbody></table></div><p>Página @filtro.Pagina · @ViewBag.Total líneas</p>
+@if(filtro.Pagina>1){<a asp-route-Pagina="@(filtro.Pagina-1)" asp-route-Desde="@filtro.Desde.ToString("yyyy-MM-dd")" asp-route-Hasta="@filtro.Hasta.ToString("yyyy-MM-dd")" asp-route-Vendedor="@filtro.Vendedor" asp-route-Marca="@filtro.Marca" asp-route-Tienda="@filtro.Tienda">Anterior</a>}
+@if(filtro.Pagina*50<ViewBag.Total){<a asp-route-Pagina="@(filtro.Pagina+1)" asp-route-Desde="@filtro.Desde.ToString("yyyy-MM-dd")" asp-route-Hasta="@filtro.Hasta.ToString("yyyy-MM-dd")" asp-route-Vendedor="@filtro.Vendedor" asp-route-Marca="@filtro.Marca" asp-route-Tienda="@filtro.Tienda">Siguiente</a>}
+

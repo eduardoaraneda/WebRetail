@@ -1,0 +1,6 @@
+@{ ViewData["Title"]="Respaldo y operación"; }
+<h1>Respaldos y operación</h1><p><a asp-action="Auditoria">Consultar auditoría de cambios</a></p>
+<section class="card"><h2>Respaldo SQL</h2><p>Crea un respaldo completo COPY_ONLY con checksum en el directorio de respaldos de SQL Server. No reemplaza copias anteriores. Se requiere permiso SQL de respaldo.</p><form asp-action="Respaldar" method="post"><button>Crear y verificar respaldo</button></form></section>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Fecha UTC</th><th>Archivo en servidor SQL</th><th>Estado</th><th>Última restauración probada</th><th></th></tr></thead><tbody>
+@foreach(var r in (List<Respaldo>)ViewBag.Respaldos){<tr><td>@r.Id</td><td>@r.Fecha.ToString("dd/MM/yyyy HH:mm")</td><td>@r.Ruta</td><td>@r.Estado</td><td>@r.RestauracionProbada?.ToString("dd/MM/yyyy HH:mm")</td><td><form asp-action="ProbarRestauracion" method="post"><input name="id" type="hidden" value="@r.Id"/><button>Probar restauración aislada</button></form></td></tr>}
+</tbody></table></div><p class="muted">La prueba restaura una base temporal, ejecuta CHECKDB y verifica el esquema. Luego elimina solo esa base temporal. Nunca sobrescribe la base de trabajo. Para protección ante pérdida del equipo, copia los respaldos a almacenamiento externo bajo tu control.</p>

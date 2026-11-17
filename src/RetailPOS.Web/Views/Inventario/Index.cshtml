@@ -1,0 +1,123 @@
+@model List<Existencia>
+@{ ViewData["Title"] = "Inventario"; var bodegas = (List<Bodega>)ViewBag.Bodegas; var variantes = (List<Variante>)ViewBag.Variantes; }
+<div class="eyebrow">INVENTARIO</div>
+<h1>Cada par, en su lugar.</h1>
+<p><a asp-controller="InventarioControl" asp-action="Index">Traspasos, conteos, stock mínimo y revisión/merma</a></p>
+<form method="get" class="fields"><label>Buscar SKU o modelo<input name="q" value="@ViewBag.Q"/></label><label>Bodega<select name="bodegaId"><option value="">Todas</option>@foreach(var b in bodegas){<option selected="@(ViewBag.BodegaId==b.Id)" value="@b.Id">@b.Nombre</option>}</select></label><label><input name="alertas" type="checkbox" value="true" checked="@ViewBag.Alertas"/>Solo reposición</label><button>Filtrar</button></form>
+<div class="grid">
+@if (User.IsInRole("Administrador"))
+{
+<section class="card">
+<h2>Nueva bodega</h2>
+<form asp-action="Bodega" method="post">
+<label>Nombre<input name="Nombre" required maxlength="120" />
+</label>
+<label>Tienda<input name="Tienda" value="Principal" maxlength="100" required/></label>
+<button>Crear bodega</button>
+</form>
+</section>
+}
+<section class="card">
+<h2>Ingreso o ajuste</h2>
+<form asp-action="Movimiento" method="post">
+<label>Bodega<select name="bodegaId" required>
+<option value="">Seleccionar</option>
+@foreach (var b in bodegas)
+{
+<option value="@b.Id">
+@b.Nombre</option>
+}
+</select>
+</label>
+<label>Variante<select name="varianteId" required>
+<option value="">Seleccionar</option>
+@foreach (var v in variantes)
+{
+<option value="@v.Id">
+@v.Sku · @v.Producto.Modelo · @v.Color · @v.SistemaTalla @v.Talla</option>
+}
+</select>
+</label>
+<div class="fields">
+<label>Cantidad (+ ingreso / − salida)<input name="cantidad" type="number" step="1" min="-100000" max="100000" required />
+</label>
+<label>Motivo<input name="motivo" maxlength="200" required />
+</label>
+</div>
+<button>Registrar movimiento</button>
+</form>
+</section>
+</div>
+<h2>Existencias por bodega</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Bodega</th>
+<th>SKU</th>
+<th>Modelo / variante</th>
+<th>Unidades</th>
+</tr>
+</thead>
+<tbody>
+@foreach (var x in Model)
+{
+<tr>
+<td>
+@x.Bodega.Nombre</td>
+<td>
+@x.Variante.Sku</td>
+<td>
+@x.Variante.Producto.Modelo · @x.Variante.Color · @x.Variante.SistemaTalla @x.Variante.Talla</td>
+<td>
+<strong>
+@x.Cantidad</strong>
+</td>
+</tr>
+}
+</tbody>
+</table>
+@if (Model.Count == 0)
+{
+<p class="empty">Crea una bodega e ingresa existencias.</p>
+}
+</div>
+<h2>Últimos 100 movimientos</h2>
+<p>Página @ViewBag.Pagina · @ViewBag.Total existencias</p>
+@if(ViewBag.Pagina>1){<a asp-route-pagina="@(ViewBag.Pagina-1)" asp-route-q="@ViewBag.Q" asp-route-bodegaId="@ViewBag.BodegaId" asp-route-alertas="@ViewBag.Alertas">Anterior</a>}
+@if(ViewBag.Pagina*50<ViewBag.Total){<a asp-route-pagina="@(ViewBag.Pagina+1)" asp-route-q="@ViewBag.Q" asp-route-bodegaId="@ViewBag.BodegaId" asp-route-alertas="@ViewBag.Alertas">Siguiente</a>}
+@if(User.IsInRole("Administrador")){
+<section class="card"><h2>Editar bodegas y tiendas</h2>@foreach(var b in bodegas){<form asp-action="EditarBodega" method="post" class="fields"><input name="id" type="hidden" value="@b.Id"/><label>Bodega<input name="nombre" value="@b.Nombre" maxlength="120" required/></label><label>Tienda<input name="tienda" value="@b.Tienda" maxlength="100" required/></label><button>Actualizar</button></form>}</section>
+}
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Fecha UTC</th>
+<th>SKU</th>
+<th>Bodega</th>
+<th>Cantidad</th>
+<th>Motivo</th>
+</tr>
+</thead>
+<tbody>
+@foreach (var m in (List<Movimiento>)ViewBag.Movimientos)
+{
+<tr>
+<td>
+@m.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+<td>
+@m.Variante.Sku</td>
+<td>
+@m.Bodega.Nombre</td>
+<td>
+@m.Cantidad</td>
+<td>
+@m.Motivo</td>
+</tr>
+}
+</tbody>
+</table>
+</div>
+
+

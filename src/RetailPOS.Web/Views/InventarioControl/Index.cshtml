@@ -1,0 +1,25 @@
+@model List<Existencia>
+@{ ViewData["Title"]="Control de inventario"; var bodegas=(List<Bodega>)ViewBag.Bodegas; var variantes=(List<Variante>)ViewBag.Variantes; }
+<h1>Control de inventario</h1><p class="muted">Traspasos conservan unidades y costo. El conteo físico ajusta el disponible a la cantidad contada. Revisión retira mercadería de la venta hasta resolverla.</p>
+<section class="card"><h2>Traspaso, conteo o revisión</h2><form asp-action="Operar" method="post"><input name="solicitudId" value="@Guid.NewGuid()" type="hidden"/><div class="fields">
+<label>Operación<select name="tipo"><option>Traspaso</option><option>Conteo</option><option>Revision</option></select></label><label>SKU<select name="varianteId">@foreach(var v in variantes){<option value="@v.Id">@v.Sku</option>}</select></label>
+<label>Bodega de origen<select name="bodegaId">@foreach(var b in bodegas){<option value="@b.Id">@b.Nombre</option>}</select></label><label>Destino (solo traspaso)<select name="destinoId"><option value="">Sin destino</option>@foreach(var b in bodegas){<option value="@b.Id">@b.Nombre</option>}</select></label>
+<label>Cantidad / conteo físico<input name="cantidad" type="number" min="0" max="100000" required/></label><label>Motivo<input name="motivo" maxlength="200" required/></label></div><button>Confirmar operación</button></form></section>
+<h2>Stock mínimo y costos</h2><p class="muted">Se priorizan las alertas de reposición (disponible menor o igual al mínimo). Un costo vacío significa desconocido; no se calcula utilidad sobre él.</p>
+<div class="table-wrap"><table><thead><tr><th>SKU / bodega</th><th>Disponible / mínimo</th><th>Costo promedio CLP</th><th>Alerta</th>@if(User.IsInRole("Administrador")){<th>Configurar</th>}</tr></thead><tbody>
+@foreach(var s in Model)
+{
+<tr><td>@s.Variante.Sku · @s.Bodega.Nombre</td><td>@s.Cantidad / @s.StockMinimo</td><td>@(s.CostoPromedio?.ToString("N2")??"Desconocido")</td><td>@(s.Cantidad<=s.StockMinimo?"Reponer":"Normal")</td>
+@if(User.IsInRole("Administrador")){
+<td><form asp-action="Parametros" method="post"><input name="varianteId" type="hidden" value="@s.VarianteId"/><input name="bodegaId" type="hidden" value="@s.BodegaId"/><label>Mínimo<input name="minimo" type="number" min="0" max="100000" value="@s.StockMinimo" required/></label><label>Costo promedio<input name="costo" type="number" min="0" step="0.01" value="@s.CostoPromedio?.ToString(CultureInfo.InvariantCulture)"/></label><label>Motivo<input name="motivo" required maxlength="200"/></label><button>Guardar</button></form></td>
+}</tr>
+}
+</tbody></table></div>
+<h2>Revisión y merma (últimos 200 registros)</h2><div class="table-wrap"><table><thead><tr><th>SKU / bodega</th><th>Cantidad</th><th>Estado</th><th>Motivo</th><th>Resolver</th></tr></thead><tbody>
+@foreach(var r in (List<RevisionStock>)ViewBag.Revisiones)
+{
+<tr><td>@r.Variante.Sku · @r.Bodega.Nombre</td><td>@r.Cantidad</td><td>@r.Estado</td><td>@r.Motivo</td><td>@if(r.Estado=="Revision"){
+<form asp-action="Resolver" method="post"><input name="id" type="hidden" value="@r.Id"/><select name="estado"><option>Disponible</option><option>Merma</option></select><input aria-label="Motivo de resolución" name="motivo" maxlength="250" required/><button>Resolver</button></form>
+}</td></tr>
+}
+</tbody></table></div>

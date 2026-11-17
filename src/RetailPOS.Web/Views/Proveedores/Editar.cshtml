@@ -1,0 +1,4 @@
+@model Proveedor
+@{ ViewData["Title"]="Proveedor"; }
+<h1>@(Model.Id==0?"Crear proveedor":"Editar proveedor")</h1>
+<section class="card"><form method="post"><input asp-for="Id" type="hidden"/><div asp-validation-summary="All"></div><div class="fields"><label>Nombre<input asp-for="Nombre" required/></label><label>RUT<input asp-for="Rut"/></label><label>Contacto<input asp-for="Contacto"/></label><label>Dirección<input asp-for="Direccion"/></label><label><input asp-for="Activo"/>Activo</label></div><button>Guardar proveedor</button></form></section>

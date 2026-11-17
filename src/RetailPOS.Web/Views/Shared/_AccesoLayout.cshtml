@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>@ViewData["Title"] · Punto de Venta Retail</title><link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/><link rel="stylesheet" href="~/css/shell.css" asp-append-version="true"/><script src="~/js/interfaz.js" asp-append-version="true" defer></script></head>
+<body class="access-body">
+<main class="access-layout">
+    <aside class="access-story" aria-label="Punto de Venta Retail">
+        <a class="access-brand" asp-controller="Acceso" asp-action="Login"><span class="brand-mark">R.</span><span>Retail<span class="brand-sub">PUNTO DE VENTA</span></span></a>
+        <div class="story-copy"><span class="story-label">CADA PASO CUENTA</span><h2>Tu tienda.<br/>Un paso<br/><em>adelante.</em></h2><p>Ventas, inventario y tu equipo.<br/>Todo conectado, en un solo lugar.</p></div>
+        <div class="retail-display" aria-hidden="true"><span class="retail-orbit"></span><svg viewBox="0 0 480 240" class="retail-art"><rect x="95" y="67" width="145" height="145" rx="16" fill="#dafa78"/><path d="M132 79V59a36 36 0 0 1 72 0v20" fill="none" stroke="#a9c85c" stroke-width="10" stroke-linecap="round"/><path d="M255 44h112l-8 145-12-7-12 7-12-7-12 7-12-7-12 7-12-7-12 7Z" fill="#f5f6ff"/><path d="M280 73h59m-59 22h43m-43 22h59" stroke="#c5c8e4" stroke-width="7" stroke-linecap="round"/><path d="M281 146h58" stroke="#7869be" stroke-width="9" stroke-linecap="round"/><rect x="198" y="145" width="103" height="65" rx="12" fill="#8e83d5"/><path d="m216 168 13 13 27-26" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="retail-tag">LISTOS PARA EL SIGUIENTE PASO ↗</span></div>
+        <div class="story-footer"><span class="status-dot"></span> Hecho para el ritmo de tu negocio.</div>
+    </aside>
+    <section class="access-form-panel"><div class="access-form-inner">
+        <span class="access-kicker">TU ESPACIO DE TRABAJO</span>
+        @if(TempData["Ok"] is string ok){<div class="notice success" role="status">@ok</div>}
+        @if(TempData["Error"] is string error){<div class="notice" role="alert">@error</div>}
+        @RenderBody()
+        <p class="access-bottom">Punto de Venta Retail <span>·</span> Gestión de tu tienda, paso a paso.</p>
+    </div></section>
+</main>
+@await RenderSectionAsync("Scripts",required:false)
+</body></html>
+
+
+

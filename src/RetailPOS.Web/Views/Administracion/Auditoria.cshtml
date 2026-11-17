@@ -1,0 +1,8 @@
+@model List<EventoAuditoria>
+@{ ViewData["Title"]="Auditoría"; }
+<h1>Auditoría</h1><p class="muted">Registra actor, entidad, registro y campos modificados. No se guardan contraseñas, tokens ni contenido de datos personales.</p>
+<form method="get" class="fields"><label>Entidad<input name="entidad" value="@ViewBag.Entidad"/></label><label>ID usuario<input name="usuario" value="@ViewBag.Usuario"/></label><button>Filtrar</button></form>
+<div class="table-wrap"><table><thead><tr><th>Fecha UTC</th><th>Actor</th><th>Entidad / registro</th><th>Acción</th><th>Campos</th></tr></thead><tbody>@foreach(var e in Model){<tr><td>@e.Fecha.ToString("dd/MM/yyyy HH:mm")</td><td>@e.UsuarioId</td><td>@e.Entidad #@e.Registro</td><td>@e.Accion</td><td>@e.Campos</td></tr>}</tbody></table></div>
+<p>Página @ViewBag.Pagina · @ViewBag.Total eventos</p>
+@if(ViewBag.Pagina>1){<a asp-route-pagina="@(ViewBag.Pagina-1)" asp-route-entidad="@ViewBag.Entidad" asp-route-usuario="@ViewBag.Usuario">Anterior</a>}
+@if(ViewBag.Pagina*100<ViewBag.Total){<a asp-route-pagina="@(ViewBag.Pagina+1)" asp-route-entidad="@ViewBag.Entidad" asp-route-usuario="@ViewBag.Usuario">Siguiente</a>}

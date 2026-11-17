@@ -1,0 +1,8 @@
+@model List<Compra>
+@{ ViewData["Title"]="Compras"; }
+<div class="toolbar"><h1>Compras e ingresos</h1><a class="button" asp-action="Nueva">Registrar compra</a></div>
+<div class="table-wrap"><table><thead><tr><th>Compra</th><th>Proveedor / referencia</th><th>Bodega</th><th>Fecha UTC</th><th>Total</th></tr></thead><tbody>
+@foreach(var c in Model){<tr><td><a asp-action="Detalle" asp-route-id="@c.Id">#@c.Id</a></td><td>@c.Proveedor.Nombre · @c.Referencia</td><td>@c.Bodega.Nombre</td><td>@c.Fecha.ToString("dd/MM/yyyy HH:mm")</td><td>$@c.Total.ToString("N0")</td></tr>}
+</tbody></table></div><p>Página @ViewBag.Pagina · @ViewBag.Total compras</p>
+@if(ViewBag.Pagina>1){<a asp-route-pagina="@(ViewBag.Pagina-1)">Anterior</a>}
+@if(ViewBag.Pagina*50<ViewBag.Total){<a asp-route-pagina="@(ViewBag.Pagina+1)">Siguiente</a>}

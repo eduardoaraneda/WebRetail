@@ -1,0 +1,130 @@
+@model List<Variante>
+@{ ViewData["Title"] = "Catálogo"; var productos = (List<Producto>)ViewBag.Productos; }
+<div class="eyebrow">CATÁLOGO</div>
+<h1>Modelos, tallas y colores</h1>
+<form method="get" class="fields"><label>Buscar SKU, modelo o marca<input name="q" value="@ViewBag.Q"/></label><button>Buscar</button></form>
+<p class="muted">Cada variante tiene su propio SKU, precio y existencias.</p>
+@if (User.IsInRole("Administrador"))
+{
+<div class="grid">
+<section class="card">
+<h2>1. Nuevo modelo</h2>
+<form asp-action="Producto" method="post">
+<p><a asp-controller="Parametros" asp-action="Index">Administrar marcas y tallas</a></p>
+<label>Marca<select name="Marca" required><option value="">Seleccionar marca</option>
+@foreach (var marca in (List<Marca>)ViewBag.Marcas)
+{
+    <option value="@marca.Nombre">@marca.Nombre</option>
+}
+</select>
+</label>
+<label>Modelo<input name="Modelo" required maxlength="150" />
+</label>
+<button>Crear modelo</button>
+</form>
+</section>
+<section class="card">
+<h2>2. Nueva variante</h2>
+<form asp-action="Variante" method="post">
+<label>Modelo<select name="ProductoId" required>
+<option value="">Seleccionar</option>
+@foreach (var p in productos)
+{
+<option value="@p.Id">
+@p.Marca · @p.Modelo</option>
+}
+</select>
+</label>
+<div class="fields">
+<label>SKU<input name="Sku" required maxlength="60" />
+</label>
+<label>Código de barras<input name="CodigoBarras" maxlength="60" />
+</label>
+<label>Color<input name="Color" required maxlength="60" />
+</label>
+<label>Talla y sistema<select name="TallaId" required><option value="">Seleccionar talla</option>
+@foreach (var talla in (List<TallaCalzado>)ViewBag.Tallas)
+{
+    <option value="@talla.Id">@talla.Sistema @talla.Valor</option>
+}
+</select>
+</label>
+<label>Precio final CLP<input type="number" name="Precio" min="1" max="999999999" step="1" required />
+</label>
+</div>
+<button>Crear variante</button>
+</form>
+</section>
+</div>
+}
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>SKU</th>
+<th>Modelo</th>
+<th>Color / talla</th>
+<th>Precio CLP</th>
+<th>Estado</th>
+@if (User.IsInRole("Administrador"))
+{
+<th>Actualizar</th>
+}
+</tr>
+</thead>
+<tbody>
+@foreach (var v in Model)
+{
+<tr>
+<td>
+<strong>
+@v.Sku</strong>
+<br />
+<small>
+@v.CodigoBarras</small>
+</td>
+<td>
+@v.Producto.Marca @v.Producto.Modelo</td>
+<td>
+@v.Color · @v.SistemaTalla @v.Talla</td>
+<td>$@v.Precio.ToString("N0")</td>
+<td>
+@(v.Activo ? "Activa" : "Inactiva")</td>
+@if (User.IsInRole("Administrador"))
+{
+<td>
+<form asp-action="Actualizar" method="post">
+<input type="hidden" name="id" value="@v.Id" />
+<input aria-label="Precio de @v.Sku" type="number" name="precio" value="@v.Precio.ToString("0", CultureInfo.InvariantCulture)" min="1" max="999999999" required />
+<label>
+<input type="checkbox" name="activo" value="true" checked="@v.Activo" />Activa</label>
+<button>Guardar</button>
+</form>
+</td>
+}
+</tr>
+}
+</tbody>
+</table>
+@if (Model.Count == 0)
+{
+<p class="empty">Crea un modelo y agrega sus tallas.</p>
+}
+</div>
+<p>Página @ViewBag.Pagina · @ViewBag.Total variantes</p>
+@if(User.IsInRole("Administrador")){
+<section class="card"><h2>Editar color, talla y código de barras</h2><p class="muted">El SKU se conserva como identificador. Las ventas previas mantienen su descripción original.</p>
+@foreach(var v in Model){
+<form asp-action="EditarVariante" method="post" class="fields"><input name="id" type="hidden" value="@v.Id"/><strong>@v.Sku</strong><label>Color<input name="color" value="@v.Color" maxlength="60" required/></label><label>Talla<select name="tallaId">@foreach(var t in (List<TallaCalzado>)ViewBag.Tallas){<option selected="@(t.Valor==v.Talla&&t.Sistema==v.SistemaTalla)" value="@t.Id">@t.Sistema @t.Valor</option>}</select></label><label>Código de barras<input name="codigoBarras" value="@v.CodigoBarras" maxlength="60"/></label><button>Actualizar variante</button></form>
+}
+</section>}
+@if(ViewBag.Pagina>1){<a asp-route-pagina="@(ViewBag.Pagina-1)" asp-route-q="@ViewBag.Q">Anterior</a>}
+@if(ViewBag.Pagina*50<ViewBag.Total){<a asp-route-pagina="@(ViewBag.Pagina+1)" asp-route-q="@ViewBag.Q">Siguiente</a>}
+@if(User.IsInRole("Administrador")){
+<section class="card"><h2>Editar modelo</h2>
+@foreach(var p in productos){
+<form asp-action="EditarModelo" method="post" class="fields"><input name="id" type="hidden" value="@p.Id"/><label>Marca<select name="marca">@foreach(var m in (List<Marca>)ViewBag.Marcas){<option selected="@(m.Nombre==p.Marca)" value="@m.Nombre">@m.Nombre</option>}</select></label><label>Modelo<input name="modelo" value="@p.Modelo" maxlength="150" required/></label><label><input name="activo" type="checkbox" value="true" checked="@p.Activo"/>Activo</label><button>Actualizar modelo</button></form>
+}
+</section>}
+
+

@@ -1,0 +1,50 @@
+@model List<Venta>
+@{ ViewData["Title"] = "Ventas"; }
+<div class="toolbar">
+<div>
+<div class="eyebrow">OPERACIONES</div>
+<h1>Ventas</h1>
+</div>
+<a class="button" asp-action="Nueva">Nueva venta</a>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Número interno</th>
+<th>Fecha UTC</th>
+<th>Cliente</th>
+<th>Pago</th>
+<th>Total CLP</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+@foreach (var v in Model)
+{
+<tr>
+<td>#@v.Id</td>
+<td>
+@v.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+<td>
+@(v.NombreCliente)</td>
+<td>
+@v.MedioPago</td>
+<td>$@v.Total.ToString("N0")</td>
+<td>
+<a asp-action="Detalle" asp-route-id="@v.Id">Ver venta</a>
+</td>
+</tr>
+}
+</tbody>
+</table>
+@if (Model.Count == 0)
+{
+<p class="empty">Las ventas confirmadas aparecerán aquí.</p>
+}
+</div>
+<small class="muted">Últimas 200 ventas.</small>
+
+
+

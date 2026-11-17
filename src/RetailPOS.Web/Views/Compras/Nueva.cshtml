@@ -1,0 +1,10 @@
+@model SolicitudCompra
+@{ ViewData["Title"]="Nueva compra"; }
+<h1>Registrar compra</h1><p class="muted">La confirmación ingresa las unidades y actualiza su costo promedio por bodega. La compra es un registro interno; no valida documentos ante el SII.</p>
+<form method="post"><input asp-for="SolicitudId" type="hidden"/><section class="card"><div class="fields">
+<label>Proveedor<select asp-for="ProveedorId" required><option value="">Seleccionar</option>@foreach(var p in (List<Proveedor>)ViewBag.Proveedores){<option value="@p.Id">@p.Nombre</option>}</select></label>
+<label>Bodega<select asp-for="BodegaId" required><option value="">Seleccionar</option>@foreach(var b in (List<Bodega>)ViewBag.Bodegas){<option value="@b.Id">@b.Nombre</option>}</select></label>
+<label>Referencia del proveedor<input asp-for="Referencia" required maxlength="80"/></label></div></section>
+<section class="card"><h2>Mercadería</h2><div id="compra-lineas"></div><button type="button" id="agregar-compra" class="secondary">Agregar línea</button><p class="muted">Costo unitario en CLP: indica un costo comparable para todas las compras, incluyendo los gastos que decidas incorporar. No se infieren impuestos.</p><button>Confirmar compra e ingreso</button></section></form>
+<template id="compra-template"><div class="fields card"><label>SKU<select class="variante" required><option value="">Seleccionar</option>@foreach(var v in (List<Variante>)ViewBag.Variantes){<option value="@v.Id">@v.Sku · @v.Color · @v.Talla</option>}</select></label><label>Cantidad<input class="cantidad" type="number" min="1" max="100000" value="1" required/></label><label>Costo unitario<input class="costo" type="number" min="0" max="999999999" step="0.01" required/></label><button type="button" class="quitar secondary">Quitar</button></div></template>
+@section Scripts{<script src="~/js/compras.js" asp-append-version="true"></script>}

@@ -1,0 +1,86 @@
+@model SolicitudVenta
+@{ ViewData["Title"] = "Punto de venta"; var stock = (List<Existencia>)ViewBag.Stock; var precios = (Dictionary<int, PrecioCalculado>)ViewBag.Precios; }
+<div class="eyebrow">PUNTO DE VENTA</div>
+<h1>Una nueva venta.</h1>
+@if (ViewBag.CajaAbierta != true)
+{
+<div class="notice">Debes <a asp-controller="Caja" asp-action="Index">abrir tu caja</a> antes de confirmar una venta.</div>
+}
+<form asp-action="Nueva" method="post" id="venta-form">
+<input asp-for="SolicitudId" type="hidden" />
+<section class="card">
+<div class="fields">
+<label>Bodega<select asp-for="BodegaId" id="bodega" required>
+<option value="">Seleccionar</option>
+@foreach (var b in (List<Bodega>)ViewBag.Bodegas)
+{
+<option value="@b.Id">
+@b.Nombre</option>
+}
+</select>
+</label>
+<label>Cliente<select asp-for="ClienteId">
+<option value="">Consumidor final</option>
+@foreach (var c in (List<Cliente>)ViewBag.Clientes)
+{
+<option value="@c.Id">
+@c.Nombre · @c.Rut</option>
+}
+</select>
+</label>
+<label>Documento simulado<select asp-for="TipoDocumento">
+<option value="39">Boleta (39)</option>
+<option value="33">Factura (33)</option>
+</select>
+</label>
+<label>Medio de pago<select asp-for="MedioPago">
+<option>Efectivo</option>
+<option>Tarjeta</option>
+<option>Transferencia</option><option>Otros</option>
+</select>
+</label>
+</div>
+<p class="muted">Los pagos se registran manualmente. No hay conexión con terminal bancaria.</p>
+<details><summary>Pago combinado (opcional)</summary><p>Completa los importes para repartir el total. Si todos quedan vacíos se usa el medio seleccionado. La suma debe coincidir exactamente con la venta.</p><div class="fields">
+<label>Efectivo CLP<input id="pago-efectivo" class="pago-combinado" data-medio="Efectivo" type="number" min="0" step="1"/></label><label>Tarjeta CLP<input id="pago-tarjeta" class="pago-combinado" data-medio="Tarjeta" type="number" min="0" step="1"/></label><label>Transferencia CLP<input id="pago-transferencia" class="pago-combinado" data-medio="Transferencia" type="number" min="0" step="1"/></label></div><label>Otros medios CLP<input id="pago-otros" class="pago-combinado" data-medio="Otros" type="number" min="0" step="1"/></label><div id="pagos-hidden"></div></details>
+</section>
+<section class="card">
+<h2>Productos</h2>
+<p class="muted">Las ofertas vigentes se aplican automáticamente. Se usa la mejor oferta sin acumular descuentos; el precio se recalcula al confirmar.</p>
+<label>Buscar por SKU, código de barras o modelo<input id="buscar" type="search" placeholder="Ej.: AIR-40-NEGRO" />
+</label>
+<div id="lineas">
+</div>
+<button type="button" class="secondary" id="agregar">Agregar producto</button>
+<p class="total">Total: $<span id="total">0</span>
+</p>
+<div class="notice">Documento de demostración sin validez tributaria. El stock se confirma al guardar.</div>
+<button type="submit" id="confirmar" disabled="@(ViewBag.CajaAbierta != true)">Confirmar venta</button>
+</section>
+</form>
+<template id="linea-template">
+<div class="sale-line">
+<label>Producto<select class="variante" required>
+<option value="">Seleccionar variante</option>
+@foreach (var x in stock)
+{
+    var precio = precios[x.VarianteId];
+<option value="@x.VarianteId" data-bodega="@x.BodegaId" data-precio="@precio.Final.ToString("0", CultureInfo.InvariantCulture)" data-busqueda="@x.Variante.Sku @x.Variante.CodigoBarras @x.Variante.Producto.Marca @x.Variante.Producto.Modelo">
+@x.Variante.Sku · @x.Variante.Producto.Modelo · @x.Variante.Color · @x.Variante.SistemaTalla @x.Variante.Talla · @x.Cantidad disponibles · $@precio.Final.ToString("N0") @(precio.OfertaNombre is null ? "" : " · Oferta: " + precio.OfertaNombre)</option>
+}
+</select>
+</label>
+<label>Cantidad<input class="cantidad" type="number" min="1" max="10000" value="1" required />
+</label>
+<button type="button" class="secondary quitar">Quitar</button>
+</div>
+</template>
+@section Scripts {
+<script src="~/js/ventas.js" asp-append-version="true">
+</script>
+}
+
+
+
+
+

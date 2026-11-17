@@ -1,0 +1,50 @@
+@model Documento
+@{ ViewData["Title"] = "Documento interno " + Model.Id; }
+<div class="eyebrow">COMPROBANTE INTERNO · @Model.Estado.ToUpperInvariant()</div>
+<h1>
+@(Model.Tipo switch { 33 => "Factura", 39 => "Boleta", 52 => "Guía de despacho", 56 => "Nota de débito", 61 => "Nota de crédito", _ => "Documento" }) de demostración</h1>
+<div class="notice">
+<strong>SIN VALIDEZ TRIBUTARIA</strong> · No es un DTE autorizado por el SII. ID interno #@Model.Id; no corresponde a un folio tributario.</div>
+<p>Venta #@Model.VentaId · @Model.Fecha.ToString("dd/MM/yyyy HH:mm") UTC</p>
+<p>Cliente: @(Model.Venta.NombreCliente) · @Model.Venta.RutCliente</p>
+<p>
+@Model.Motivo</p>
+@if (Model.ReferenciaId.HasValue)
+{
+<p>Referencia interna #@Model.ReferenciaId</p>
+}
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Descripción</th>
+<th>Cantidad</th>
+<th>Precio final CLP</th>
+<th>Subtotal CLP</th>
+</tr>
+</thead>
+<tbody>
+@foreach (var d in Model.Detalles)
+{
+<tr>
+<td>
+@d.Descripcion</td>
+<td>
+@d.Cantidad</td>
+<td>$@d.PrecioUnitario.ToString("N0")</td>
+<td>$@((d.Cantidad * d.PrecioUnitario).ToString("N0"))</td>
+</tr>
+}
+</tbody>
+</table>
+</div>
+<p class="total">Total $@Model.Total.ToString("N0")</p>
+<p class="muted">Precios finales; esta vista no constituye un cálculo ni un XML tributario.</p>
+<button class="no-print" id="imprimir">Imprimir comprobante interno</button>
+@section Scripts {
+<script>document.getElementById('imprimir').addEventListener('click', () => window.print());</script>
+}
+
+
+
+

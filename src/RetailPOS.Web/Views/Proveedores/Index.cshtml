@@ -1,0 +1,13 @@
+@model List<Proveedor>
+@{ ViewData["Title"]="Proveedores"; }
+<div class="toolbar"><h1>Proveedores</h1><a class="button" asp-action="Editar">Crear proveedor</a></div>
+<form method="get" class="fields"><label>Buscar<input name="q" value="@ViewBag.Q" /></label><button>Buscar</button></form>
+<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>RUT</th><th>Contacto</th><th>Estado</th><th></th></tr></thead><tbody>
+@foreach(var p in Model)
+{
+    <tr><td>@p.Nombre</td><td>@p.Rut</td><td>@p.Contacto</td><td>@(p.Activo?"Activo":"Inactivo")</td><td><a asp-action="Editar" asp-route-id="@p.Id">Editar</a></td></tr>
+}
+</tbody></table></div>
+<p>Página @ViewBag.Pagina · @ViewBag.Total registros</p>
+@if(ViewBag.Pagina>1){<a asp-route-pagina="@(ViewBag.Pagina-1)" asp-route-q="@ViewBag.Q">Anterior</a>}
+@if(ViewBag.Pagina*50<ViewBag.Total){<a asp-route-pagina="@(ViewBag.Pagina+1)" asp-route-q="@ViewBag.Q">Siguiente</a>}

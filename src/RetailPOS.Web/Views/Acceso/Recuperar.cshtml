@@ -1,0 +1,6 @@
+@model RecuperacionForm
+@{ Layout="_AccesoLayout"; ViewData["Title"]="Recuperar acceso"; }
+<section class="card auth"><h1>Recuperar contraseña</h1>
+@if(ViewBag.Enviado==true){<div class="notice">Si la cuenta está activa, recibirás instrucciones por el canal de correo configurado. En desarrollo local los correos se guardan en la carpeta privada .local/correos del proyecto.</div>}
+<form method="post"><div asp-validation-summary="All"></div><label>Correo<input asp-for="Email" required/></label><button>Solicitar instrucciones</button></form></section>
+

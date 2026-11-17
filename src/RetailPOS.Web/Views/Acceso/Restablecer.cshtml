@@ -1,0 +1,4 @@
+@model RestablecerForm
+@{ Layout="_AccesoLayout"; ViewData["Title"]="Restablecer contraseña"; }
+<section class="card auth"><h1>Nueva contraseña</h1><form method="post"><input asp-for="Email" type="hidden"/><input asp-for="Token" type="hidden"/><div asp-validation-summary="All"></div><label>Nueva contraseña<input asp-for="Password" autocomplete="new-password" required minlength="12"/></label><label>Repetir contraseña<input asp-for="Confirmar" autocomplete="new-password" required/></label><button>Guardar contraseña</button></form></section>
+

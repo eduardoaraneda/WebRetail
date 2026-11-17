@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../src/RetailPOS.Infrastructure/RetailPOS.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/RetailPOS.Web/RetailPOS.Web.csproj" />
+  </ItemGroup>
+</Project>
+

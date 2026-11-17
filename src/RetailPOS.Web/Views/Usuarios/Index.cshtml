@@ -1,0 +1,49 @@
+@model UsuarioForm
+@{ ViewData["Title"] = "Usuarios"; }
+<div class="eyebrow">ADMINISTRACIÓN</div>
+<h1>Usuarios y roles</h1>
+<section class="card">
+<h2>Nueva cuenta</h2>
+<form asp-action="Crear" method="post">
+<div class="fields">
+<label>Correo<input asp-for="Email" autocomplete="off" required />
+</label>
+<label>Contraseña inicial<input asp-for="Password" minlength="12" autocomplete="new-password" required />
+</label>
+<label>Rol<select asp-for="Rol">
+<option>Vendedor</option>
+<option>Bodega</option>
+<option>Administrador</option>
+</select>
+</label>
+</div>
+<p class="muted">Mínimo 12 caracteres, mayúscula, minúscula, número y símbolo.</p>
+<button>Crear usuario</button>
+</form>
+</section>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Correo</th>
+<th>Roles</th>
+</tr>
+</thead>
+<tbody>
+@foreach (var u in (List<RetailPOS.Web.Controllers.UsuarioResumen>)ViewBag.Usuarios)
+{
+<tr>
+<td>
+@u.Email</td>
+<td>
+@u.Roles</td>
+<td>@(u.Activo?"Activo":"Desactivado")</td>
+<td><form asp-action="Actualizar" method="post"><input name="id" type="hidden" value="@u.Id"/><select name="rol" aria-label="Rol de @u.Email"><option selected="@(u.Roles=="Administrador")">Administrador</option><option selected="@(u.Roles=="Vendedor")">Vendedor</option><option selected="@(u.Roles=="Bodega")">Bodega</option></select><label><input type="checkbox" name="activo" value="true" checked="@u.Activo"/>Activo</label><button>Actualizar</button></form></td>
+</tr>
+}
+</tbody>
+</table>
+</div>
+
+
+

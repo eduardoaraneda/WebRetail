@@ -1,0 +1,44 @@
+@model List<Documento>
+@{ ViewData["Title"] = "Documentos"; }
+<div class="eyebrow">DOCUMENTOS INTERNOS</div>
+<h1>Emisión de demostración</h1>
+<div class="notice">No son DTE válidos, no tienen folio tributario y no se envían al SII.</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>ID interno</th>
+<th>Tipo</th>
+<th>Venta</th>
+<th>Fecha UTC</th>
+<th>Total CLP</th>
+<th>Estado</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+@foreach (var d in Model)
+{
+<tr>
+<td>#@d.Id</td>
+<td>
+@(d.Tipo switch { 33 => "Factura", 39 => "Boleta", 52 => "Guía de despacho", 56 => "Nota de débito", 61 => "Nota de crédito", _ => "Otro" }) (@d.Tipo)</td>
+<td>#@d.VentaId</td>
+<td>
+@d.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+<td>$@d.Total.ToString("N0")</td>
+<td>
+<span class="badge">
+@d.Estado</span>
+</td>
+<td>
+<a asp-action="Detalle" asp-route-id="@d.Id">Ver</a>
+</td>
+</tr>
+}
+</tbody>
+</table>
+</div>
+
+

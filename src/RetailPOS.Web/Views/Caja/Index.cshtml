@@ -1,0 +1,30 @@
+@model List<SesionCaja>
+@{ ViewData["Title"]="Cuadratura diaria";var caja=(SesionCaja?)ViewBag.Caja;var filas=(List<CuadraturaMedio>)ViewBag.Cuadratura;var usuarios=(Dictionary<string,string>)ViewBag.Usuarios;var diario=(ResumenCuadratura)ViewBag.ResumenDiario;var sesion=(ResumenCuadratura?)ViewBag.ResumenSesion;var fecha=(DateOnly)ViewBag.Fecha;var cierre=sesion??new ResumenCuadratura(); }
+<div class="eyebrow">VENTAS Y RECAUDACIÓN</div><h1>Cuadratura de cajas</h1>
+<form method="get" class="card fields no-print"><label>Día de ventas (Chile)<input name="fecha" type="date" value="@fecha.ToString("yyyy-MM-dd")" required/></label>
+@if(User.IsInRole("Administrador")){
+<label>Cajero<select name="cajero"><option value="todos" selected="@(ViewBag.Cajero=="todos")">Todos los cajeros</option>@foreach(var usuario in usuarios){<option value="@usuario.Key" selected="@(ViewBag.Cajero==usuario.Key)">@usuario.Value</option>}</select></label>
+}<button>Consultar día</button></form>
+@await Html.PartialAsync("_ResumenCuadratura",diario)
+@if(caja is null){
+<section class="card"><h2>Abrir mi caja de hoy</h2><form asp-action="Abrir" method="post"><label>Fondo inicial CLP<input name="fondo" type="number" min="0" max="999999999" step="1" value="0" required/></label><button>Abrir caja</button></form></section>
+}else{
+<h2>Mi caja abierta #@caja.Id · @caja.FechaOperativa.ToString("dd/MM/yyyy")</h2>
+@if(caja.FechaOperativa!=RetailPOS.Infrastructure.Precios.HoyChile){<div class="notice">Esta caja corresponde a un día anterior. Debes cerrarla antes de registrar las ventas de hoy.</div>}
+<p class="muted">El siguiente cierre corresponde a esta sesión de caja. El resumen del día de arriba puede incluir otras sesiones o cajeros según el filtro seleccionado.</p>
+@if(sesion is not null){@await Html.PartialAsync("_ResumenCuadratura",sesion)}
+<div class="table-wrap"><table><thead><tr><th>Medio</th><th>Fondo</th><th>Ingresos registrados</th><th>Reembolsos</th><th>Ingresos adicionales</th><th>Retiros</th><th>Esperado al cierre CLP</th></tr></thead><tbody>
+@foreach(var f in filas){<tr><td>@f.Medio</td><td>@f.Fondo.ToString("N0")</td><td>@f.Ventas.ToString("N0")</td><td>@f.Reembolsos.ToString("N0")</td><td>@f.Ingresos.ToString("N0")</td><td>@f.Retiros.ToString("N0")</td><td>$@f.Esperado.ToString("N0")</td></tr>}
+</tbody></table></div>
+<div class="grid"><section class="card"><h2>Ingreso o retiro de efectivo</h2><form asp-action="Movimiento" method="post"><input type="hidden" name="solicitudId" value="@Guid.NewGuid()"/><div class="fields"><label>Tipo<select name="tipo"><option>Ingreso</option><option>Retiro</option></select></label><label>Importe CLP<input name="importe" type="number" min="1" max="999999999" step="1" required/></label></div><label>Motivo<input name="motivo" maxlength="250" required/></label><button>Registrar movimiento</button></form></section>
+<section class="card"><h2>Ingresado por el cajero</h2>
+<form asp-action="Cerrar" method="post" id="cierre-caja" data-sistema="@cierre.TotalSistema.ToString("0",CultureInfo.InvariantCulture)" data-fondo="@cierre.Fondo.ToString("0",CultureInfo.InvariantCulture)" data-ingresos="@cierre.IngresosAdicionales.ToString("0",CultureInfo.InvariantCulture)" data-retiros="@cierre.Retiros.ToString("0",CultureInfo.InvariantCulture)">
+<label>Efectivo contado CLP<input name="Contado" data-declaracion type="number" min="0" max="999999999" step="1" required/></label><label>Tarjetas verificadas CLP<input name="Tarjeta" data-declaracion type="number" min="-999999999" max="999999999" step="1" required/></label><label>Transferencias verificadas CLP<input name="Transferencia" data-declaracion type="number" min="-999999999" max="999999999" step="1" required/></label><label>Otros medios verificados CLP<input name="Otros" data-declaracion type="number" min="-999999999" max="999999999" step="1" required/></label>
+<div class="cuadratura-preview" aria-live="polite"><p>Total neto esperado del sistema: <strong>$@cierre.TotalSistema.ToString("N0")</strong></p><p>Total ingresado (sin ajustar): <strong id="declarado-total">Pendiente</strong></p><p>Total ingresado neto: <strong id="declarado-neto">Pendiente</strong></p><p>Diferencia total: <strong id="declarado-diferencia">Pendiente</strong></p></div><div id="resultado-cierre" class="notice" role="status"></div>
+<label>Observación de cierre<input name="Observacion" maxlength="500" placeholder="Obligatoria si hay diferencia total o por medio"/></label><p class="muted">Ingresa cero donde no hubo ingresos. El sistema vuelve a calcular todos los totales al guardar; una diferencia requiere observación y queda registrada.</p><button>Guardar cuadratura y cerrar caja</button></form></section></div>
+}
+<h2>@(User.IsInRole("Administrador")?"Últimas 100 sesiones de todas las cajas":"Mis últimas 100 sesiones")</h2><div class="table-wrap"><table><thead><tr><th>Caja / cajero</th><th>Día operativo</th><th>Estado</th><th>Diferencia total CLP</th><th>Revisión</th><th></th></tr></thead><tbody>
+@foreach(var c in Model){<tr><td>#@c.Id<br/><small>@usuarios.GetValueOrDefault(c.UsuarioId,c.UsuarioId)</small></td><td>@c.FechaOperativa.ToString("dd/MM/yyyy")</td><td>@(c.Cierre is null?"Abierta":c.Cuadraturas.Any(x=>x.Esperado!=x.Contado)?"Con diferencias":"Cerrada")</td><td>@(c.Cierre is null?"Pendiente":c.Cuadraturas.Count==0?(c.EfectivoContado-c.EfectivoEsperado)?.ToString("N0"):c.Cuadraturas.Sum(x=>x.Contado-x.Esperado).ToString("N0"))</td><td>@(c.Revision is null?"Pendiente":"Revisada")</td><td><a asp-action="Detalle" asp-route-id="@c.Id">Ver cuadratura</a></td></tr>}
+</tbody></table></div>
+@section Scripts{<script src="~/js/cuadratura.js" asp-append-version="true"></script>}
+

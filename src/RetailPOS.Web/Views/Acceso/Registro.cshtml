@@ -1,0 +1,13 @@
+@model RegistroForm
+@{Layout="_AccesoLayout";ViewData["Title"]="Crear cuenta";}
+<h1>Únete a tu equipo.</h1><p class="access-description">Crea tu cuenta para trabajar en la tienda.</p>
+<form asp-action="Registro" method="post" class="access-form">
+    <div asp-validation-summary="All" role="alert"></div>
+    <label>Correo electrónico<input asp-for="Email" type="email" placeholder="tu@correo.cl" autocomplete="username" maxlength="200" required/></label>
+    <label>Contraseña<span class="password-field"><input asp-for="Password" id="registro-password" placeholder="Crea una contraseña segura" autocomplete="new-password" required minlength="12"/><button type="button" data-password="registro-password" aria-label="Mostrar contraseña" aria-pressed="false">Ver</button></span></label>
+    <label>Confirmar contraseña<input asp-for="Confirmar" placeholder="Repite tu contraseña" autocomplete="new-password" required minlength="12"/></label>
+    <p class="field-help">Usa al menos 12 caracteres con mayúscula, minúscula, número y símbolo.</p>
+    <div class="access-info">Tu cuenta quedará pendiente de activación. Un administrador de la tienda debe autorizar tu acceso.</div>
+    <button class="access-submit" type="submit">Crear mi cuenta <span aria-hidden="true">↗</span></button>
+</form>
+<p class="access-switch">¿Ya tienes cuenta? <a asp-action="Login">Inicia sesión</a></p>

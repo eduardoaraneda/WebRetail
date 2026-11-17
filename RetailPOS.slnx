@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RetailPOS.Domain/RetailPOS.Domain.csproj" />
+    <Project Path="src/RetailPOS.Application/RetailPOS.Application.csproj" />
+    <Project Path="src/RetailPOS.Infrastructure/RetailPOS.Infrastructure.csproj" />
+    <Project Path="src/RetailPOS.Web/RetailPOS.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RetailPOS.Verificacion/RetailPOS.Verificacion.csproj" />
+  </Folder>
+</Solution>
+

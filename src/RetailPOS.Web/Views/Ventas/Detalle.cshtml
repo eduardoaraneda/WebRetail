@@ -1,0 +1,121 @@
+@model Venta
+@{ ViewData["Title"] = "Venta " + Model.Id; var documentos = (List<Documento>)ViewBag.Documentos; }
+<div class="eyebrow">VENTA CONFIRMADA</div>
+<h1>Venta #@Model.Id</h1>
+<p class="muted">Devoluciones: se reparten entre los medios pagados; un saldo utilizado en un cambio se reembolsa en efectivo. La caja debe tener fondo suficiente para los reembolsos en efectivo.</p>
+<p>
+@Model.Fecha.ToString("dd/MM/yyyy HH:mm") UTC · @Model.Bodega.Nombre · @Model.MedioPago</p>
+<p>Cliente: @(Model.NombreCliente)</p>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Descripción</th>
+<th>Cantidad</th>
+<th>Precio lista / oferta</th>
+<th>Precio unitario CLP</th>
+<th>Subtotal CLP</th>
+</tr>
+</thead>
+<tbody>
+@foreach (var d in Model.Detalles)
+{
+<tr>
+<td>
+@d.Descripcion</td>
+<td>
+@d.Cantidad</td>
+<td>$@d.PrecioLista.ToString("N0")
+@if (d.OfertaNombre is not null)
+{
+    <br /><small>@d.OfertaNombre · Ahorro unitario $@d.DescuentoUnitario.ToString("N0")</small>
+}
+</td>
+<td>$@d.PrecioUnitario.ToString("N0")</td>
+<td>$@((d.Cantidad * d.PrecioUnitario).ToString("N0"))</td>
+</tr>
+}
+</tbody>
+</table>
+</div>
+<p class="total">Total $@Model.Total.ToString("N0")</p>
+<p>Pagos registrados: @string.Join(" · ",Model.Pagos.Where(x=>x.DocumentoId==null).Select(x=>x.Medio+" $"+x.Importe.ToString("N0")))</p>
+<section class="card">
+<h2>Documentos simulados</h2>
+@foreach (var doc in documentos)
+{
+<p>
+<a asp-controller="Documentos" asp-action="Detalle" asp-route-id="@doc.Id">Documento interno #@doc.Id · Tipo @doc.Tipo · @doc.Estado</a>
+</p>
+}<div class="notice">Sin validez tributaria. No se envían documentos al SII.</div>
+</section>
+@if (!documentos.Any(x => x.Tipo == 52))
+{
+<section class="card">
+<h2>Agregar guía de despacho simulada</h2>
+<p>No genera otra salida de inventario.</p>
+<form asp-controller="Documentos" asp-action="Guia" method="post">
+<input type="hidden" name="ventaId" value="@Model.Id" />
+<input type="hidden" name="referenciaId" value="@documentos.First(x => x.Tipo is 33 or 39).Id" />
+<label>Motivo del despacho<input name="motivo" required maxlength="250" />
+</label>
+<button>Crear guía simulada</button>
+</form>
+</section>
+}
+<a asp-action="Nueva" class="button">Otra venta</a>
+@if (User.IsInRole("Administrador"))
+{
+    <section class="card"><h2>Cambio de talla o color en una operación</h2><p>Devuelve una unidad disponible y entrega otra variante del mismo modelo. Solo se cobra o reembolsa la diferencia. Si la nueva variante no tiene stock, la operación completa se cancela.</p>
+    <form asp-controller="Pagos" asp-action="Cambiar" method="post"><input name="solicitudId" value="@Guid.NewGuid()" type="hidden"/><div class="fields"><label>Unidad original<select name="detalleId">@foreach(var d in Model.Detalles){<option value="@d.Id">@d.Descripcion</option>}</select></label><label>Nueva variante<select name="nuevaVariante">@foreach(var v in (List<Variante>)ViewBag.VariantesCambio){<option value="@v.Id">@v.Sku · @v.Color · @v.SistemaTalla @v.Talla</option>}</select></label><label>Medio de la diferencia<select name="medio"><option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option><option>Otros</option></select></label><label>Motivo<input name="motivo" maxlength="250" required/></label></div><button>Confirmar cambio completo</button></form></section>
+    var devueltas = (Dictionary<int, int>)ViewBag.Devueltas;
+    var original = documentos.First(x => x.Tipo is 33 or 39);
+    <section class="card">
+<h2>Devolución y nota de crédito simulada</h2>
+<p>Registra una devolución y su reembolso manual por el medio de pago original. Abre tu caja antes de confirmar. Para un cambio de talla, registra la devolución y luego una nueva venta.</p>
+    @foreach (var linea in Model.Detalles)
+{
+        var pendiente = linea.Cantidad - devueltas.GetValueOrDefault(linea.Id);
+        if (pendiente > 0)
+{
+        <form asp-controller="Documentos" asp-action="Devolver" method="post">
+<input type="hidden" name="solicitudId" value="@Guid.NewGuid()" />
+<input type="hidden" name="detalleVentaId" value="@linea.Id" />
+<p>
+<strong>
+@linea.Descripcion</strong> · @pendiente unidades por devolver</p>
+<div class="fields">
+<label>Cantidad<input type="number" name="cantidad" value="1" min="1" max="@pendiente" required />
+</label>
+<label>Motivo<input name="motivo" required maxlength="250" />
+</label>
+<label>
+<input name="reingresarStock" type="checkbox" value="true" />Reingresar como disponible</label>
+</div>
+<p class="muted">Sin marcar: el producto queda fuera del stock disponible, por revisión o merma.</p>
+<button>Registrar devolución y reembolso manual</button>
+</form>
+<hr />
+        }
+    }
+    </section>
+    <section class="card">
+<h2>Nota de débito simulada</h2>
+<p>Ajuste de importe con referencia al documento original. No modifica stock ni registra un cobro; su gestión de cobro queda pendiente.</p>
+<form asp-controller="Documentos" asp-action="Debito" method="post">
+<input type="hidden" name="solicitudId" value="@Guid.NewGuid()" />
+<input type="hidden" name="referenciaId" value="@original.Id" />
+<div class="fields">
+<label>Importe CLP<input name="importe" type="number" min="1" max="999999999" step="1" required />
+</label>
+<label>Motivo<input name="motivo" required maxlength="250" />
+</label>
+</div>
+<button>Crear nota de débito simulada</button>
+</form>
+</section>
+}
+
+
+
+

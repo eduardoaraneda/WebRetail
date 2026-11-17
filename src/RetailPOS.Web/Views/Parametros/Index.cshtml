@@ -1,0 +1,42 @@
+@model List<TallaCalzado>
+@{ ViewData["Title"] = "Marcas y tallas"; }
+<div class="eyebrow">CATÁLOGOS MAESTROS</div>
+<h1>Marcas y tallas</h1>
+<p class="muted">La talla incluye su sistema: EU 40 y US 40 son valores distintos. Desactivar una marca o talla impide nuevas ventas, sin cambiar el historial.</p>
+<div class="grid">
+    <section class="card">
+        <h2>Crear marca</h2>
+        <form asp-action="Marca" method="post">
+            <label>Nombre de marca<input name="Nombre" maxlength="100" required /></label>
+            <button>Crear marca</button>
+        </form>
+    </section>
+    <section class="card">
+        <h2>Crear talla</h2>
+        <form asp-action="Talla" method="post">
+            <div class="fields">
+                <label>Talla<input name="Valor" maxlength="15" placeholder="40 o 40.5" required /></label>
+                <label>Sistema<select name="Sistema"><option>EU</option><option>US</option><option>UK</option><option>CM</option></select></label>
+            </div>
+            <button>Crear talla</button>
+        </form>
+    </section>
+</div>
+<h2>Marcas</h2>
+<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Estado</th><th></th></tr></thead><tbody>
+@foreach (var marca in (List<Marca>)ViewBag.Marcas)
+{
+    <tr><td>@marca.Nombre</td><td>@(marca.Activa ? "Activa" : "Inactiva")</td><td>
+        <form asp-action="EstadoMarca" method="post"><input type="hidden" name="id" value="@marca.Id" /><input type="hidden" name="activa" value="@((!marca.Activa).ToString().ToLowerInvariant())" /><button class="secondary">@(marca.Activa ? "Desactivar" : "Activar")</button></form>
+    </td></tr>
+}
+</tbody></table></div>
+<h2>Tallas</h2>
+<div class="table-wrap"><table><thead><tr><th>Sistema</th><th>Talla</th><th>Estado</th><th></th></tr></thead><tbody>
+@foreach (var talla in Model)
+{
+    <tr><td>@talla.Sistema</td><td>@talla.Valor</td><td>@(talla.Activa ? "Activa" : "Inactiva")</td><td>
+        <form asp-action="EstadoTalla" method="post"><input type="hidden" name="id" value="@talla.Id" /><input type="hidden" name="activa" value="@((!talla.Activa).ToString().ToLowerInvariant())" /><button class="secondary">@(talla.Activa ? "Desactivar" : "Activar")</button></form>
+    </td></tr>
+}
+</tbody></table></div>

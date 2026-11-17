@@ -1,0 +1,17 @@
+@model AccesoForm
+@{Layout="_AccesoLayout";ViewData["Title"]="Ingresar";var admin=ViewBag.AccesoAdministrador==true;}
+<h1>@(admin?"Administra tu tienda.":"Qué bueno verte.")</h1>
+<p class="access-description">@(admin?"Ingresa con una cuenta de administrador autorizada.":"Entra a tu cuenta y continúa donde lo dejaste.")</p>
+<div class="access-tabs" aria-label="Tipo de acceso"><a asp-action="Login" class="@(!admin?"selected":"")" aria-current="@(!admin?"page":null)">Equipo de tienda</a><a asp-action="Login" asp-route-administrador="true" class="@(admin?"selected":"")" aria-current="@(admin?"page":null)">Administración</a></div>
+<form asp-action="Login" method="post" class="access-form">
+<input type="hidden" name="administrador" value="@admin.ToString().ToLowerInvariant()"/>
+<input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl"/>
+<div asp-validation-summary="All" role="alert"></div>
+<label>Correo electrónico<input asp-for="Email" type="email" autocomplete="username" placeholder="tu@correo.cl" required maxlength="200"/></label>
+<label>Contraseña<span class="password-field"><input asp-for="Password" id="login-password" autocomplete="current-password" placeholder="Ingresa tu contraseña" required minlength="12"/><button type="button" data-password="login-password" aria-label="Mostrar contraseña" aria-pressed="false">Ver</button></span></label>
+<div class="password-recovery"><a asp-action="Recuperar">¿Olvidaste tu contraseña?</a></div>
+<button class="access-submit" type="submit">@(admin?"Ingresar como administrador":"Ingresar a mi tienda") <span aria-hidden="true">↗</span></button>
+</form>
+<p class="access-switch">¿Aún no tienes cuenta? <a asp-action="Registro">Crear cuenta</a></p>
+@if(ViewBag.PuedeConfigurar==true){<a class="setup-link" asp-action="Configurar"><span aria-hidden="true">◇</span> Configurar primer administrador <span aria-hidden="true">→</span></a>}
+else{<a class="setup-link" asp-action="Administradores"><span aria-hidden="true">◇</span> Crear administrador <span aria-hidden="true">→</span></a><p class="field-help" style="text-align:center">Requiere una cuenta de administrador autorizada.</p>}

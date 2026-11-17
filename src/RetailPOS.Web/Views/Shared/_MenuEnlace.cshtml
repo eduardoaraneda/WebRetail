@@ -1,0 +1,3 @@
+@model (string Control,string Texto,string Icono)
+@{var actual=string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(),Model.Control,StringComparison.OrdinalIgnoreCase);}
+<a asp-controller="@Model.Control" asp-action="Index" class="sidebar-link @(actual?"is-active":"")" aria-current="@(actual?"page":null)"><span class="sidebar-icon" aria-hidden="true">@Model.Icono</span><span>@Model.Texto</span></a>

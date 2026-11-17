@@ -1,0 +1,7 @@
+@model AccesoForm
+@{Layout="_AccesoLayout";ViewData["Title"]="Crear administrador";}
+<h1>Comencemos contigo.</h1><p class="access-description">Configura la primera cuenta de administrador de tu tienda.</p>
+<form asp-action="Configurar" method="post" class="access-form"><div asp-validation-summary="All" role="alert"></div>
+<label>Correo electrónico<input asp-for="Email" type="email" autocomplete="username" placeholder="administrador@correo.cl" required maxlength="200"/></label>
+<label>Contraseña<span class="password-field"><input asp-for="Password" id="admin-password" autocomplete="new-password" placeholder="Crea una contraseña segura" required minlength="12"/><button type="button" data-password="admin-password" aria-label="Mostrar contraseña" aria-pressed="false">Ver</button></span></label>
+<p class="field-help">Mínimo 12 caracteres con mayúscula, minúscula, número y símbolo.</p><div class="access-info">Esta configuración solo está disponible al iniciar la tienda. Los siguientes administradores se crean desde Usuarios con una cuenta autorizada.</div><button class="access-submit" type="submit">Crear administrador <span aria-hidden="true">↗</span></button></form><p class="access-switch"><a asp-action="Login">Volver al inicio de sesión</a></p>
